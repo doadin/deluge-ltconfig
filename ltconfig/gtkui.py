@@ -37,9 +37,7 @@
 import logging
 
 
-import gobject
-import gtk
-import gtk.glade
+from gi.repository import Gtk, GObject
 
 
 from twisted.internet import reactor
@@ -79,22 +77,23 @@ class GtkUI(GtkPluginBase):
 
     log.debug("Enabling GtkUI...")
 
-    self._ui = gtk.glade.XML(get_resource("wnd_preferences.glade"))
+    self.main_builder = Gtk.Builder()
+    self._ui = self.main_builder.add_from_file(get_resource("wnd_preferences.ui"))
 
-    self._blk_prefs = self._ui.get_widget("blk_preferences")
-    self._lbl_ver = self._ui.get_widget("lbl_version")
-    self._chk_apply_on_start = self._ui.get_widget("chk_apply_on_start")
-    self._blk_view = self._ui.get_widget("blk_view")
+    self._blk_prefs = self.main_builder.get_object("blk_preferences")
+    self._lbl_ver = self.main_builder.get_object("lbl_version")
+    self._chk_apply_on_start = self.main_builder.get_object("chk_apply_on_start")
+    self._blk_view = self.main_builder.get_object("blk_view")
 
-    self._presets = self._ui.get_widget("presets")
+    self._presets = self.main_builder.get_object("presets")
     self._presets.set_active(0)
-    self._load_preset = self._ui.get_widget("load_preset")
+    self._load_preset = self.main_builder.get_object("load_preset")
     self._load_preset.connect("clicked", self._do_load_preset)
 
     self._view = self._build_view()
-    window = gtk.ScrolledWindow()
-    window.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
-    window.set_shadow_type(gtk.SHADOW_IN)
+    window = Gtk.ScrolledWindow()
+    #window.set_policy(Gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
+    #window.set_shadow_type(Gtk.SHADOW_IN)
     window.add(self._view)
     self._blk_view.add(window)
 
@@ -142,14 +141,14 @@ class GtkUI(GtkPluginBase):
 
   def _build_view(self):
 
-    model = gtk.ListStore(bool, str,
-      gobject.TYPE_PYOBJECT, gobject.TYPE_PYOBJECT)
-    view = gtk.TreeView(model)
+    model = Gtk.ListStore(bool, str,
+      GObject.TYPE_PYOBJECT, GObject.TYPE_PYOBJECT)
+    view = Gtk.TreeView(model)
 
 
     def on_button_pressed(widget, event):
 
-      if event.button != 1 or event.type != gtk.gdk.BUTTON_PRESS:
+      if event.button != 1 or event.type != Gtk.gdk.BUTTON_PRESS:
         return False
 
       x, y = event.get_coords()
@@ -166,55 +165,55 @@ class GtkUI(GtkPluginBase):
 
 
     view.connect("button-press-event", on_button_pressed)
-    view.get_selection().set_mode(gtk.SELECTION_NONE)
+    #view.get_selection().set_mode(Gtk.SELECTION_NONE)
     view.set_search_column(1)
 
-    col = gtk.TreeViewColumn()
+    col = Gtk.TreeViewColumn()
     view.append_column(col)
 
-    cr = gtk.CellRendererToggle()
+    cr = Gtk.CellRendererToggle()
     cr.set_property("xpad", 4)
     cr.connect("toggled", self._do_enable_toggled, model, 0)
-    col.pack_start(cr)
+    #col.pack_start(cr, None)
     col.set_cell_data_func(cr, self._render_cell, "toggle")
 
-    col = gtk.TreeViewColumn(_("Name"), gtk.CellRendererText(), \
+    col = Gtk.TreeViewColumn(_("Name"), Gtk.CellRendererText(), \
       text=1, sensitive=0)
     col.set_resizable(True)
     view.append_column(col)
 
-    col = gtk.TreeViewColumn(_("Setting"))
+    col = Gtk.TreeViewColumn(_("Setting"))
     col.set_resizable(True)
     view.append_column(col)
 
-    cr = gtk.CellRendererText()
+    cr = Gtk.CellRendererText()
     cr.set_property("xalign", 0.0)
     cr.connect("edited", self._do_edited, model, 2)
-    col.pack_start(cr)
+    #col.pack_start(cr)
     col.set_attributes(cr, editable=0, sensitive=0)
     col.set_cell_data_func(cr, self._render_cell, "text")
 
-    cr = gtk.CellRendererToggle()
+    cr = Gtk.CellRendererToggle()
     cr.set_property("xalign", 0.0)
     cr.connect("toggled", self._do_toggled, model, 2)
-    col.pack_start(cr)
+    #col.pack_start(cr)
     col.set_attributes(cr, activatable=0, sensitive=0)
     col.set_cell_data_func(cr, self._render_cell, "toggle")
 
-    col = gtk.TreeViewColumn(_("Actual"))
+    col = Gtk.TreeViewColumn(_("Actual"))
     col.set_resizable(True)
     view.append_column(col)
 
-    cr = gtk.CellRendererText()
+    cr = Gtk.CellRendererText()
     cr.set_property("sensitive", False)
     cr.set_property("xalign", 0.0)
-    col.pack_start(cr)
+    #col.pack_start(cr)
     col.set_cell_data_func(cr, self._render_cell, "text")
 
-    cr = gtk.CellRendererToggle()
+    cr = Gtk.CellRendererToggle()
     cr.set_property("sensitive", False)
     cr.set_property("xalign", 0.0)
-    col.pack_start(cr)
+    #col.pack_start(cr)
     col.set_cell_data_func(cr, self._render_cell, "toggle")
 
     return view

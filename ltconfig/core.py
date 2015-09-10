@@ -47,12 +47,6 @@ from common.plugin import (
   LOG_HANDLER,
 )
 
-from common.config.file import init_config
-from common.config.plugin import (
-  CONFIG_VERSION, CONFIG_DEFAULTS, CONFIG_SPECS,
-)
-
-
 CONFIG_FILE = "%s.conf" % MODULE_NAME
 
 log = logging.getLogger(__name__)
@@ -73,8 +67,8 @@ class Core(CorePluginBase):
     log.debug("Enabling Core...")
 
     self._session = component.get("Core").session
-    self._config = deluge.configmanager.ConfigManager(
-        CONFIG_FILE, CONFIG_DEFAULTS)
+    #self._config = deluge.configmanager.ConfigManager(
+    #    CONFIG_FILE, CONFIG_DEFAULTS)
 
     self._initial_settings = self._get_session_settings(self._session)
 
@@ -99,12 +93,6 @@ class Core(CorePluginBase):
   def _load_config(self):
 
     config = deluge.configmanager.ConfigManager(CONFIG_FILE)
-
-    old_ver = init_config(config, CONFIG_DEFAULTS,
-      CONFIG_VERSION, CONFIG_SPECS)
-
-    if old_ver != CONFIG_VERSION:
-      log.debug("Config file converted: v%s -> v%s", old_ver, CONFIG_VERSION)
 
     return config
 
@@ -136,7 +124,7 @@ class Core(CorePluginBase):
 
     log.debug("Get original settings")
 
-    return dict(self._initial_settings)
+    #return dict(self._initial_settings)
 
 
   @export
